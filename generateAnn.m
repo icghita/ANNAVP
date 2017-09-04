@@ -1,4 +1,4 @@
-function bestAnnStruct = generateAnn(fastaData, excelData, noOfIter, noOfHiddenNeurons, codification, antibody, classArgs, networkType)
+function bestAnnStruct = generateAnn(networkType, codification, fastaData, excelData, noOfIter, noOfHiddenNeurons, antibody, classArgs)
     %returns a struct containing the resulting neural network, training
     %data, the input parameters and the output data necessary to draw plots
     if ~exist('noOfIter', 'var')
@@ -39,7 +39,7 @@ function bestAnnStruct = generateAnn(fastaData, excelData, noOfIter, noOfHiddenN
         [clusterContents, clusterHeader] = sortByLengthDesc(clusterContents);
         plotData = struct('FastaData', codifiedFastaData, 'ClusterHeader', clusterHeader, 'ClusterContents', []);
         plotData.ClusterContents = clusterContents;
-        bestAnnStruct = struct('ANN', ann, 'TR', tr, 'Codification', codification, 'Antibody', antibody, 'ClassArgs', classArgs, 'NetworkType', networkType, 'AntibodySetLimits', [0 0], 'PlotData', plotData);
+        bestAnnStruct = struct('ANN', ann, 'TR', tr, 'Codification', codification, 'Antibody', 'NaN', 'ClassArgs', [0 0 0], 'NetworkType', networkType, 'AntibodySetLimits', [0 0], 'PlotData', plotData);
         figure(1);
         plotsomhits(ann, codifiedFastaData);
     end
