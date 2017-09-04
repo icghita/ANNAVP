@@ -411,15 +411,12 @@ oldpointer = get(handles.figure1, 'pointer');
 set(handles.figure1, 'pointer', 'watch');
 drawnow;
 try
-    if(strcmp(handles.networkTypeValue, 'Self Organizing Map'))
-        if ~isfield(handles, 'noOfANNIterationsValue')
-            handles.noOfANNIterationsValue = 1;
-        end
-        if ~isfield(handles, 'noOfHiddenNeuronsValue')
-            handles.noOfHiddenNeuronsValue = 1;
-        end
+    if(strcmp(handles.networkTypeValue, 'Feedforward Neural Network'))
+        ANNStorage = generateAnn(handles.networkTypeValue, handles.proteinCodificationValue, handles.fastaData, handles.excelData, handles.noOfANNIterationsValue, handles.noOfHiddenNeuronsValue, handles.selectedAntibodyName, [handles.useClassesCheckBoxValue handles.firstI50ClassLimitValue handles.secondI50ClassLimitValue]);
     end
-    ANNStorage = generateAnn(handles.fastaData, handles.excelData, handles.noOfANNIterationsValue, handles.noOfHiddenNeuronsValue, handles.proteinCodificationValue, handles.selectedAntibodyName, [handles.useClassesCheckBoxValue handles.firstI50ClassLimitValue handles.secondI50ClassLimitValue], handles.networkTypeValue);
+    if(strcmp(handles.networkTypeValue, 'Self Organizing Map'))
+        ANNStorage = generateAnn(handles.networkTypeValue, handles.proteinCodificationValue, handles.fastaData);
+    end
     if(strcmp(ANNStorage.NetworkType, 'Self Organizing Map'))
         setappdata(0,'mainHandles', ANNStorage);
         somOutputGUI;
