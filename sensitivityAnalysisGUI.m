@@ -65,7 +65,7 @@ if(strcmp(selectedANN.NetworkType, 'Feedforward Neural Network'))
         xlabel('Input Index');
         ylabel('Delta Performance');
     catch
-        h = msgbox('Make sure that the Fasta alignements are equal to the input of the Network', 'Error');
+        h = msgbox('Make sure that the Fasta alignements are equal to the input of the Network and that both fasta and excel files have been provided', 'Error');
     end
 else
     h = msgbox('Sensitivity Analysis works only for Supervized Neural Networks (not SOM)', 'Warning');
