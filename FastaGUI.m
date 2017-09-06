@@ -22,7 +22,7 @@ function varargout = FastaGUI(varargin)
 
 % Edit the above text to modify the response to help FastaGUI
 
-% Last Modified by GUIDE v2.5 21-Aug-2017 19:11:27
+% Last Modified by GUIDE v2.5 06-Sep-2017 16:02:01
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -169,4 +169,3 @@ try
 catch
 end
 guidata(hObject,handles);
-
