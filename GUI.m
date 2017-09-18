@@ -22,7 +22,7 @@ function varargout = GUI(varargin)
 
 % Edit the above text to modify the response to help GUI
 
-% Last Modified by GUIDE v2.5 22-Aug-2017 11:43:53
+% Last Modified by GUIDE v2.5 18-Sep-2017 12:43:19
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -99,7 +99,7 @@ try
     handles.excelData = localexcelData;
     handles.antibodyNames = localAntibodyNames;
 catch
-    h = msgbox('File not found','Error');
+    h = msgbox('File not found or not compatible','Error');
 end
 handles.excelFile = localExcelFile;
 
@@ -220,7 +220,7 @@ try
     handles = virusListbox_Callback(handles.virusListbox, eventdata, handles);
     handles.fastaData = localFastaData;
 catch
-    h = msgbox('File not found','Error');
+    h = msgbox('File not found or not compatible','Error');
 end
 handles.fastaFile = localFastaFile;
 
@@ -322,6 +322,30 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
+function networkName_Callback(hObject, eventdata, handles)
+% hObject    handle to networkName (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of networkName as text
+%        str2double(get(hObject,'String')) returns contents of networkName as a double
+handles = guidata(handles.output);
+handles.networkNameString = get(hObject,'String');
+guidata(hObject,handles);
+
+% --- Executes during object creation, after setting all properties.
+function networkName_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to networkName (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
 % --- Executes on selection change in proteinCodification.
 function proteinCodification_Callback(hObject, eventdata, handles)
 % hObject    handle to proteinCodification (see GCBO)
@@ -333,6 +357,17 @@ function proteinCodification_Callback(hObject, eventdata, handles)
 handles = guidata(handles.output);
 contents = cellstr(get(hObject,'String'));
 handles.proteinCodificationValue = contents{get(hObject,'Value')};
+switch handles.proteinCodificationValue
+    case 'A (Numerical)'
+        multiplierValue = 1;
+    case 'A-6 (Properties codification)'
+        multiplierValue = 6;
+    case 'A-9 (Properties codification)'
+        multiplierValue = 9;
+    case 'B (Raw Properties)'
+        multiplierValue = 6;
+end
+set(handles.multiplierText, 'String', strcat(num2str(multiplierValue),' x'));
 guidata(hObject,handles);
 
 % --- Executes during object creation, after setting all properties.
@@ -375,7 +410,8 @@ if ~isfield(selectedANNTR, 'perf')
 else
     perf = num2str(min(selectedANN.TR.perf));
 end
-tableData = {'ANN Type' selectedANN.ANN.name;
+tableData = {'ANN Name' selectedANN.NetworkName;
+             'ANN Type' selectedANN.NetworkType;
              'Input Size' num2str(selectedANN.ANN.inputs{1}.size)
              'Performance' perf;
              'Codification' selectedANN.Codification;
@@ -411,13 +447,20 @@ oldpointer = get(handles.figure1, 'pointer');
 set(handles.figure1, 'pointer', 'watch');
 drawnow;
 try
+    if ~isfield(handles,'networkNameString')
+        networkNameStringParam = datestr(now);
+    else
+        if(isempty(handles.networkNameString))
+            networkNameStringParam = datestr(now);
+        else
+            networkNameStringParam = handles.networkNameString;
+        end
+    end
     if(strcmp(handles.networkTypeValue, 'Feedforward Neural Network'))
-        ANNStorage = generateAnn(handles.networkTypeValue, handles.proteinCodificationValue, handles.fastaData, handles.excelData, handles.noOfANNIterationsValue, handles.noOfHiddenNeuronsValue, handles.selectedAntibodyName, [handles.useClassesCheckBoxValue handles.firstI50ClassLimitValue handles.secondI50ClassLimitValue]);
+        ANNStorage = generateFeedforwardNetwork(networkNameStringParam, handles.networkTypeValue, handles.proteinCodificationValue, handles.fastaData, handles.excelData, handles.noOfANNIterationsValue, handles.noOfHiddenNeuronsValue, handles.networkTrainingFunctionValue, handles.selectedAntibodyName, [handles.firstDataDivisionLimitValue handles.secondDataDivisionLimitValue], [handles.useParallelCheckboxValue handles.useGpuCheckboxValue], [handles.useClassesCheckBoxValue handles.firstI50ClassLimitValue handles.secondI50ClassLimitValue]);
     end
     if(strcmp(handles.networkTypeValue, 'Self Organizing Map'))
-        ANNStorage = generateAnn(handles.networkTypeValue, handles.proteinCodificationValue, handles.fastaData);
-    end
-    if(strcmp(ANNStorage.NetworkType, 'Self Organizing Map'))
+        ANNStorage = generateSelfOrganizingMap(networkNameStringParam, handles.networkTypeValue, handles.proteinCodificationValue, handles.fastaData, handles.mapTopologyValue, handles.mapWidthValue, handles.mapHeightValue, handles.trainingStepsValue, handles.neighborhoodSizeValue, handles.distanceFunctionValue);
         setappdata(0,'mainHandles', ANNStorage);
         somOutputGUI;
     end
@@ -448,9 +491,13 @@ function noOfANNIterations_Callback(hObject, eventdata, handles)
 %        str2double(get(hObject,'String')) returns contents of noOfANNIterations as a double
 handles = guidata(handles.output);
 try
-    handles.noOfANNIterationsValue = str2double(get(hObject,'String'));
+    handles.noOfANNIterationsValue = get(hObject,'String');
+    if ~all(ismember(handles.noOfANNIterationsValue, '1234567890'))
+        h = msgbox('Value must be an integer');
+        error();
+    end
+    handles.noOfANNIterationsValue = str2double(handles.noOfANNIterationsValue);
 catch
-    h = msgbox('Integer Required','Error');
 end
 guidata(hObject,handles);
 
@@ -477,9 +524,13 @@ function noOfHiddenNeurons_Callback(hObject, eventdata, handles)
 %        str2double(get(hObject,'String')) returns contents of noOfHiddenNeurons as a double
 handles = guidata(handles.output);
 try
-    handles.noOfHiddenNeuronsValue = str2double(get(hObject,'String'));
+    handles.noOfHiddenNeuronsValue = get(hObject,'String');
+    if ~all(ismember(handles.noOfHiddenNeuronsValue, '1234567890'))
+        h = msgbox('Value must be an integer');
+        error();
+    end
+    handles.noOfHiddenNeuronsValue = str2double(handles.noOfHiddenNeuronsValue);
 catch
-    h = msgbox('Integer Required','Error');
 end
 guidata(hObject,handles);
 
@@ -517,7 +568,7 @@ try
     loadedANN = load(handles.ANNFile);
     selectedANN = loadedANN.ANNStorage(handles.SelectedANNIndex);
     codifiedInput = codifyFasta(rawInput, selectedANN.Codification);
-    if(strcmp(selectedANN.NetworkType, 'Self Organizing Map') && strcmp(selectedANN.Codification, 'B (Properties)'))
+    if(strcmp(selectedANN.NetworkType, 'Self Organizing Map') && strcmp(selectedANN.Codification, 'B (Raw Properties)'))
         codifiedInput = vertcat(codifiedInput{1}, codifiedInput{2}, codifiedInput{3}, codifiedInput{4}, codifiedInput{5}, codifiedInput{6});
     end
     rawOutput = selectedANN.ANN(codifiedInput);
@@ -564,12 +615,7 @@ drawnow;
 
 loadedANN = load(handles.ANNFile);
 selectedANN = loadedANN.ANNStorage(handles.SelectedANNIndex);
-setappdata(0,'mainHandles', selectedANN);
-viewANNGUI;
-
-if(strcmp(selectedANN.NetworkType, 'Self Organizing Map'))
-    somOutputGUI;
-end
+view(selectedANN.ANN);
 
 set(handles.figure1, 'pointer', oldpointer);
 drawnow;
@@ -687,7 +733,14 @@ function firstI50ClassLimit_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of firstI50ClassLimit as text
 %        str2double(get(hObject,'String')) returns contents of firstI50ClassLimit as a double
 handles = guidata(handles.output);
-handles.firstI50ClassLimitValue = str2double(get(hObject,'String'));
+try
+    handles.firstI50ClassLimitValue = str2double(get(hObject,'String'));
+    if isnan(handles.firstI50ClassLimitValue)
+        h = msgbox('Value must be numeric');
+        error();
+    end
+catch
+end
 guidata(hObject,handles);
 
 % --- Executes during object creation, after setting all properties.
@@ -713,7 +766,14 @@ function secondI50ClassLimit_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of secondI50ClassLimit as text
 %        str2double(get(hObject,'String')) returns contents of secondI50ClassLimit as a double
 handles = guidata(handles.output);
-handles.secondI50ClassLimitValue = str2double(get(hObject,'String'));
+try   
+    handles.secondI50ClassLimitValue = str2double(get(hObject,'String'));
+    if isnan(handles.secondI50ClassLimitValue)
+        h = msgbox('Value must be numeric');
+        error();
+    end
+catch
+end
 guidata(hObject,handles);
 
 % --- Executes during object creation, after setting all properties.
@@ -741,6 +801,7 @@ setappdata(0,'mainHandles', handles);
 I50GUI;
 guidata(hObject, handles);
 
+
 % --- Executes on button press in viewFastaPushButton.
 function viewFastaPushButton_Callback(hObject, eventdata, handles)
 % hObject    handle to viewFastaPushButton (see GCBO)
@@ -749,6 +810,30 @@ function viewFastaPushButton_Callback(hObject, eventdata, handles)
 handles = guidata(handles.output);
 setappdata(0,'mainHandles', handles);
 FastaGUI;
+guidata(hObject, handles);
+
+
+% --- Executes on button press in reggressionPlotPushButton.
+function reggressionPlotPushButton_Callback(hObject, eventdata, handles)
+% hObject    handle to reggressionPlotPushButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles = guidata(handles.output);
+oldpointer = get(handles.figure1, 'pointer');
+set(handles.figure1, 'pointer', 'watch');
+drawnow;
+
+loadedANN = load(handles.ANNFile);
+selectedANN = loadedANN.ANNStorage(handles.SelectedANNIndex);
+if(strcmp(selectedANN.NetworkType, 'Feedforward Neural Network'))
+    figure('Name', 'Regression Plot');
+    plotregression(selectedANN.PlotData.RegressionPlot{1,1}, selectedANN.PlotData.RegressionPlot{1,2}, 'Train', selectedANN.PlotData.RegressionPlot{2,1}, selectedANN.PlotData.RegressionPlot{2,2}, 'Validation', selectedANN.PlotData.RegressionPlot{3,1}, selectedANN.PlotData.RegressionPlot{3,2}, 'Testing');
+else
+    h = msgbox('Regression Plot is available only for Feedforward Neural Networks', 'Warning');
+end
+
+set(handles.figure1, 'pointer', oldpointer);
+drawnow;
 guidata(hObject, handles);
 
 
@@ -771,6 +856,384 @@ end
 set(handles.figure1, 'pointer', oldpointer);
 drawnow;
 guidata(hObject, handles);
+
+
+% --- Executes on button press in plotSomHitsPushButton.
+function plotSomHitsPushButton_Callback(hObject, eventdata, handles)
+% hObject    handle to plotSomHitsPushButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles = guidata(handles.output);
+oldpointer = get(handles.figure1, 'pointer');
+set(handles.figure1, 'pointer', 'watch');
+drawnow;
+
+loadedANN = load(handles.ANNFile);
+selectedANN = loadedANN.ANNStorage(handles.SelectedANNIndex);
+setappdata(0,'mainHandles', selectedANN);
+plotSOMHitsGUI;
+
+set(handles.figure1, 'pointer', oldpointer);
+drawnow;
+guidata(hObject, handles);
+
+
+% --- Executes on button press in viewClustersPushButton.
+function viewClustersPushButton_Callback(hObject, eventdata, handles)
+% hObject    handle to viewClustersPushButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles = guidata(handles.output);
+oldpointer = get(handles.figure1, 'pointer');
+set(handles.figure1, 'pointer', 'watch');
+drawnow;
+
+loadedANN = load(handles.ANNFile);
+selectedANN = loadedANN.ANNStorage(handles.SelectedANNIndex);
+setappdata(0,'mainHandles', selectedANN);
+somOutputGUI;
+
+set(handles.figure1, 'pointer', oldpointer);
+drawnow;
+guidata(hObject, handles);
+
+
+% --- Executes on selection change in mapTopology.
+function mapTopology_Callback(hObject, eventdata, handles)
+% hObject    handle to mapTopology (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns mapTopology contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from mapTopology
+handles = guidata(handles.output);
+contents = cellstr(get(hObject,'String'));
+handles.mapTopologyValue = contents{get(hObject,'Value')};
+guidata(hObject,handles);
+
+
+% --- Executes during object creation, after setting all properties.
+function mapTopology_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to mapTopology (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+handles.mapTopologyValue = 'Hexagonal';
+guidata(hObject,handles);
+
+
+% --- Executes on selection change in distanceFunction.
+function distanceFunction_Callback(hObject, eventdata, handles)
+% hObject    handle to distanceFunction (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns distanceFunction contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from distanceFunction
+handles = guidata(handles.output);
+contents = cellstr(get(hObject,'String'));
+handles.distanceFunctionValue = contents{get(hObject,'Value')};
+guidata(hObject,handles);
+
+% --- Executes during object creation, after setting all properties.
+function distanceFunction_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to distanceFunction (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+handles.distanceFunctionValue = 'linkdist';
+guidata(hObject,handles);
+
+
+function mapWidth_Callback(hObject, eventdata, handles)
+% hObject    handle to mapWidth (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of mapWidth as text
+%        str2double(get(hObject,'String')) returns contents of mapWidth as a double
+handles = guidata(handles.output);
+try
+    handles.mapWidthValue = get(hObject,'String');
+    if ~all(ismember(handles.mapWidthValue, '1234567890'))
+        h = msgbox('Value must be an integer');
+        error();
+    end
+    handles.mapWidthValue = str2double(handles.mapWidthValue);
+catch
+end
+guidata(hObject,handles);
+
+% --- Executes during object creation, after setting all properties.
+function mapWidth_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to mapWidth (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+function mapHeight_Callback(hObject, eventdata, handles)
+% hObject    handle to mapHeight (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of mapHeight as text
+%        str2double(get(hObject,'String')) returns contents of mapHeight as a double
+handles = guidata(handles.output);
+try
+    handles.mapHeightValue = get(hObject,'String');
+    if ~all(ismember(handles.mapHeightValue, '1234567890'))
+        h = msgbox('Value must be an integer');
+        error();
+    end
+    handles.mapHeightValue = str2double(handles.mapHeightValue);
+catch
+end
+guidata(hObject,handles);
+
+% --- Executes during object creation, after setting all properties.
+function mapHeight_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to mapHeight (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+function trainingSteps_Callback(hObject, eventdata, handles)
+% hObject    handle to trainingSteps (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of trainingSteps as text
+%        str2double(get(hObject,'String')) returns contents of trainingSteps as a double
+handles = guidata(handles.output);
+try
+    handles.trainingStepsValue = get(hObject,'String');
+    if ~all(ismember(handles.trainingStepsValue, '1234567890'))
+        h = msgbox('Value must be an integer');
+        error();
+    end
+    handles.trainingStepsValue = str2double(handles.trainingStepsValue);
+catch
+end
+guidata(hObject,handles);
+
+% --- Executes during object creation, after setting all properties.
+function trainingSteps_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to trainingSteps (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+function neighborhoodSize_Callback(hObject, eventdata, handles)
+% hObject    handle to neighborhoodSize (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of neighborhoodSize as text
+%        str2double(get(hObject,'String')) returns contents of neighborhoodSize as a double
+handles = guidata(handles.output);
+try
+    handles.neighborhoodSizeValue = get(hObject,'String');
+    if ~all(ismember(handles.neighborhoodSizeValue, '1234567890'))
+        h = msgbox('Value must be an integer');
+        error();
+    end
+    handles.neighborhoodSizeValue = str2double(handles.neighborhoodSizeValue);
+catch
+end
+guidata(hObject,handles);
+
+% --- Executes during object creation, after setting all properties.
+function neighborhoodSize_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to neighborhoodSize (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function firstDataDivisionLimit_Callback(hObject, eventdata, handles)
+% hObject    handle to firstDataDivisionLimit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of firstDataDivisionLimit as text
+%        str2double(get(hObject,'String')) returns contents of firstDataDivisionLimit as a double
+handles = guidata(handles.output);
+try
+    handles.firstDataDivisionLimitValue = str2double(get(hObject,'String'));
+    if isnan(handles.firstDataDivisionLimitValue)
+        h = msgbox('Value must be an integer');
+        error();
+    end
+    if(handles.firstDataDivisionLimitValue < 0 || handles.firstDataDivisionLimitValue > 100)
+        h = msgbox('Value must be from 0 to 100');
+        error();
+    end
+    if isfield(handles,'secondDataDivisionLimitValue')
+        if(handles.firstDataDivisionLimitValue > handles.secondDataDivisionLimitValue)
+            error();
+            h = msgbox('The first value must be less than the second');
+        end
+    end
+catch
+end
+guidata(hObject,handles);
+
+% --- Executes during object creation, after setting all properties.
+function firstDataDivisionLimit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to firstDataDivisionLimit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+function secondDataDivisionLimit_Callback(hObject, eventdata, handles)
+% hObject    handle to secondDataDivisionLimit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of secondDataDivisionLimit as text
+%        str2double(get(hObject,'String')) returns contents of secondDataDivisionLimit as a double
+handles = guidata(handles.output);
+try
+    handles.secondDataDivisionLimitValue = str2double(get(hObject,'String'));
+    if isnan(handles.secondDataDivisionLimitValue)
+        h = msgbox('Value must be an integer');
+        error();
+    end
+    if(handles.secondDataDivisionLimitValue < 0 || handles.secondDataDivisionLimitValue > 100)
+        h = msgbox('Value must be from 0 to 100');
+        error();
+    end
+    if isfield(handles,'firstDataDivisionLimitValue')
+        if(handles.firstDataDivisionLimitValue > handles.secondDataDivisionLimitValue)
+            error();
+            h = msgbox('The first value must be less than the second');
+        end
+    end
+catch
+end
+guidata(hObject,handles);
+
+% --- Executes during object creation, after setting all properties.
+function secondDataDivisionLimit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to secondDataDivisionLimit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in networkTrainingFunction.
+function networkTrainingFunction_Callback(hObject, eventdata, handles)
+% hObject    handle to networkTrainingFunction (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns networkTrainingFunction contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from networkTrainingFunction
+handles = guidata(handles.output);
+contents = cellstr(get(hObject,'String'));
+handles.networkTrainingFunctionValue = contents{get(hObject,'Value')};
+guidata(hObject,handles);
+
+% --- Executes during object creation, after setting all properties.
+function networkTrainingFunction_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to networkTrainingFunction (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+handles.networkTrainingFunctionValue = 'Levenberg-Marquardt';
+guidata(hObject,handles);
+
+
+% --- Executes on button press in useParallelCheckbox.
+function useParallelCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to useParallelCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of useParallelCheckbox
+handles = guidata(handles.output);
+handles.useParallelCheckboxValue = get(hObject,'Value');
+guidata(hObject,handles);
+
+% --- Executes during object creation, after setting all properties.
+function useParallelCheckbox_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to useParallelCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+handles.useParallelCheckboxValue = 0;
+guidata(hObject,handles);
+
+
+% --- Executes on button press in useGpuCheckbox.
+function useGpuCheckbox_Callback(hObject, eventdata, handles)
+% hObject    handle to useGpuCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of useGpuCheckbox
+handles = guidata(handles.output);
+handles.useGpuCheckboxValue = get(hObject,'Value');
+guidata(hObject,handles);
+
+
+% --- Executes during object creation, after setting all properties.
+function useGpuCheckbox_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to useGpuCheckbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+handles.useGpuCheckboxValue = 0;
+guidata(hObject,handles);
+
 
 
 % --- Executes on button press in DebugButton.

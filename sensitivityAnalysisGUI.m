@@ -68,7 +68,7 @@ if(strcmp(selectedANN.NetworkType, 'Feedforward Neural Network'))
         h = msgbox('Make sure that the Fasta alignements are equal to the input of the Network and that both fasta and excel files have been provided', 'Error');
     end
 else
-    h = msgbox('Sensitivity Analysis works only for Supervized Neural Networks (not SOM)', 'Warning');
+    h = msgbox('Sensitivity Analysis is available only for Feedforward Neural Networks', 'Warning');
 end
 % Update handles structure
 guidata(hObject, handles);

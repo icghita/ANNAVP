@@ -23,28 +23,27 @@ function [inputNumbers, deltaPerf] = sensitivityAnalysis(ann, fastaData, excelDa
             deltaPerf(i) = originalPerf - tempPerf;
             commonCodifiedFastaData(i,:) = tempArray;
         end
-    end
-    if(strcmp(codification, 'B (Properties)'))
+    else
+        if(strcmp(codification, 'A-9 (Properties codification)'))
+            numProperties = 9;
+        else
+            numProperties = 6;
+        end
         inputSize = size(commonCodifiedFastaData{1});
         inputNumbers = [1:inputSize(1)];
         deltaPerf = zeros(1, inputSize(1));
         for i=1:inputSize(1)
-            tempMatrix = [commonCodifiedFastaData{1}(i,:); commonCodifiedFastaData{2}(i,:); commonCodifiedFastaData{3}(i,:); commonCodifiedFastaData{4}(i,:); commonCodifiedFastaData{5}(i,:); commonCodifiedFastaData{6}(i,:)];
-            commonCodifiedFastaData{1}(i,:) = zeros(1, length(tempMatrix(1,:)));
-            commonCodifiedFastaData{2}(i,:) = zeros(1, length(tempMatrix(1,:)));
-            commonCodifiedFastaData{3}(i,:) = zeros(1, length(tempMatrix(1,:)));
-            commonCodifiedFastaData{4}(i,:) = zeros(1, length(tempMatrix(1,:)));
-            commonCodifiedFastaData{5}(i,:) = zeros(1, length(tempMatrix(1,:)));
-            commonCodifiedFastaData{6}(i,:) = zeros(1, length(tempMatrix(1,:)));
+            tempMatrix = [];
+            for j=1:numProperties
+                tempMatrix = [tempMatrix; commonCodifiedFastaData{j}(i,:)];
+                commonCodifiedFastaData{j}(i,:) = zeros(1, length(commonCodifiedFastaData{j}(i,:)));
+            end
             annOutput = ann(commonCodifiedFastaData);
             tempPerf = perform(ann, commonAntibodyData, annOutput);
             deltaPerf(i) = originalPerf - tempPerf;
-            commonCodifiedFastaData{1}(i,:) = tempMatrix(1,:);
-            commonCodifiedFastaData{2}(i,:) = tempMatrix(2,:);
-            commonCodifiedFastaData{3}(i,:) = tempMatrix(3,:);
-            commonCodifiedFastaData{4}(i,:) = tempMatrix(4,:);
-            commonCodifiedFastaData{5}(i,:) = tempMatrix(5,:);
-            commonCodifiedFastaData{6}(i,:) = tempMatrix(6,:);
+            for j=1:numProperties
+                commonCodifiedFastaData{j}(i,:) = tempMatrix(j,:);
+            end
         end
     end
 end
