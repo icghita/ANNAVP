@@ -20,9 +20,8 @@ function [codifiedFasta, filteredFasta] = codifyFasta(fastaData, codification, r
         if(isempty(regexpi(tempString', '#')))
             if(strcmp(codification, 'A (Numerical)'))
                 tempArray = double(aa2int(tempString))/range;
-            end
-            if(strcmp(codification, 'B (Properties)'))
-                tempArray = aa2properties(tempString);
+            else
+                tempArray = aa2properties(tempString, codification);
             end
             if(isFirstIter || length(codifiedFastaMatrix) == length(tempArray))
                 codifiedFastaMatrix = horzcat(codifiedFastaMatrix, tempArray);
@@ -33,16 +32,17 @@ function [codifiedFasta, filteredFasta] = codifyFasta(fastaData, codification, r
     end
     if(strcmp(codification, 'A (Numerical)'))
         codifiedFasta = codifiedFastaMatrix;
-    end
-    if(strcmp(codification, 'B (Properties)'))
-        codifiedFasta = {[];[];[];[];[];[]};
-        for i=1:6:length(codifiedFastaMatrix(:,1))
-            codifiedFasta{1} = vertcat(codifiedFasta{1}, codifiedFastaMatrix(i,:));
-            codifiedFasta{2} = vertcat(codifiedFasta{2}, codifiedFastaMatrix(i+1,:));
-            codifiedFasta{3} = vertcat(codifiedFasta{3}, codifiedFastaMatrix(i+2,:));
-            codifiedFasta{4} = vertcat(codifiedFasta{4}, codifiedFastaMatrix(i+3,:));
-            codifiedFasta{5} = vertcat(codifiedFasta{5}, codifiedFastaMatrix(i+4,:));
-            codifiedFasta{6} = vertcat(codifiedFasta{6}, codifiedFastaMatrix(i+5,:));
+    else
+        if(strcmp(codification, 'A-9 (Properties codification)'))
+            numProperties = 9;
+        else
+            numProperties = 6;
+        end
+        codifiedFasta = cell(numProperties, 1);
+        for i=1:numProperties:length(codifiedFastaMatrix(:,1))
+            for j=1:numProperties
+                codifiedFasta{j} = vertcat(codifiedFasta{j}, codifiedFastaMatrix(i+j-1,:));
+            end
         end
     end
 end

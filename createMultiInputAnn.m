@@ -1,4 +1,4 @@
-function ann = createMultiInputAnn(numInputs, numHiddenNeurons)
+function ann = createMultiInputAnn(numInputs, numHiddenNeurons, trainingFunction)
     %creates a feedforward neural network with numInputs layers (each layer
     %coresponds to an input) and each layer has numHiddenNeurons neurons
     ann = network;
@@ -16,7 +16,7 @@ function ann = createMultiInputAnn(numInputs, numHiddenNeurons)
     ann.outputConnect(numInputs + 1) = 1;
     ann.initFcn = 'initlay';
     ann.performFcn = 'mse';
-    ann.trainFcn = 'trainlm';
+    ann.trainFcn = trainingFunction;
     ann.divideFcn = 'dividerand';
     ann.plotFcns = {'plotperform','plottrainstate','ploterrhist','plotregression','plotfit'};
 end

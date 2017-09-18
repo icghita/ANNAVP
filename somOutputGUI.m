@@ -56,17 +56,21 @@ function somOutputGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 handles.output = hObject;
 
 selectedANN = getappdata(0, 'mainHandles');
-maxLength = length(selectedANN.PlotData.ClusterContents{1});
-data = {};
-for i=1:length(selectedANN.PlotData.ClusterContents)
-    if(length(selectedANN.PlotData.ClusterContents{i}) < maxLength)
-        for j=1:maxLength-length(selectedANN.PlotData.ClusterContents{i})
-            selectedANN.PlotData.ClusterContents{i}{end+1} = '';
+if(strcmp(selectedANN.NetworkType, 'Self Organizing Map'))
+    maxLength = length(selectedANN.PlotData.ClusterContents{1});
+    data = {};
+    for i=1:length(selectedANN.PlotData.ClusterContents)
+        if(length(selectedANN.PlotData.ClusterContents{i}) < maxLength)
+            for j=1:maxLength-length(selectedANN.PlotData.ClusterContents{i})
+                selectedANN.PlotData.ClusterContents{i}{end+1} = '';
+            end
         end
+        data = [data selectedANN.PlotData.ClusterContents{i}'];
     end
-    data = [data selectedANN.PlotData.ClusterContents{i}'];
+    set(handles.somClustersTable, 'Data', data, 'ColumnName', selectedANN.PlotData.ClusterHeader);
+else
+    h = msgbox('Cluster View is available only for Self Organizing Maps', 'Warning');
 end
-set(handles.somClustersTable, 'Data', data, 'ColumnName', selectedANN.PlotData.ClusterHeader);
 
 % Update handles structure
 guidata(hObject, handles);

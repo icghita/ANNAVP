@@ -1,35 +1,35 @@
-function varargout = viewANNGUI(varargin)
-% VIEWANNGUI MATLAB code for viewANNGUI.fig
-%      VIEWANNGUI, by itself, creates a new VIEWANNGUI or raises the existing
+function varargout = plotSOMHitsGUI(varargin)
+% PLOTSOMHITSGUI MATLAB code for plotSOMHitsGUI.fig
+%      PLOTSOMHITSGUI, by itself, creates a new PLOTSOMHITSGUI or raises the existing
 %      singleton*.
 %
-%      H = VIEWANNGUI returns the handle to a new VIEWANNGUI or the handle to
+%      H = PLOTSOMHITSGUI returns the handle to a new PLOTSOMHITSGUI or the handle to
 %      the existing singleton*.
 %
-%      VIEWANNGUI('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in VIEWANNGUI.M with the given input arguments.
+%      PLOTSOMHITSGUI('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in PLOTSOMHITSGUI.M with the given input arguments.
 %
-%      VIEWANNGUI('Property','Value',...) creates a new VIEWANNGUI or raises the
+%      PLOTSOMHITSGUI('Property','Value',...) creates a new PLOTSOMHITSGUI or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before viewANNGUI_OpeningFcn gets called.  An
+%      applied to the GUI before plotSOMHitsGUI_OpeningFcn gets called.  An
 %      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to viewANNGUI_OpeningFcn via varargin.
+%      stop.  All inputs are passed to plotSOMHitsGUI_OpeningFcn via varargin.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
-% Edit the above text to modify the response to help viewANNGUI
+% Edit the above text to modify the response to help plotSOMHitsGUI
 
-% Last Modified by GUIDE v2.5 08-Aug-2017 19:07:46
+% Last Modified by GUIDE v2.5 18-Sep-2017 12:38:21
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @viewANNGUI_OpeningFcn, ...
-                   'gui_OutputFcn',  @viewANNGUI_OutputFcn, ...
+                   'gui_OpeningFcn', @plotSOMHitsGUI_OpeningFcn, ...
+                   'gui_OutputFcn',  @plotSOMHitsGUI_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -44,37 +44,34 @@ end
 % End initialization code - DO NOT EDIT
 
 
-% --- Executes just before viewANNGUI is made visible.
-function viewANNGUI_OpeningFcn(hObject, eventdata, handles, varargin)
+% --- Executes just before plotSOMHitsGUI is made visible.
+function plotSOMHitsGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to viewANNGUI (see VARARGIN)
+% varargin   command line arguments to plotSOMHitsGUI (see VARARGIN)
 
-% Choose default command line output for viewANNGUI
+% Choose default command line output for plotSOMHitsGUI
 handles.output = hObject;
 
 selectedANN = getappdata(0, 'mainHandles');
-axes(handles.viewANNPlot);
+axes(handles.plotSomHitsAxes);
 if(strcmp(selectedANN.NetworkType, 'Self Organizing Map'))
     plotsomhits(selectedANN.ANN, selectedANN.PlotData.FastaData);
 else
-    plotregression(selectedANN.PlotData.RegressionPlot{1,1}, selectedANN.PlotData.RegressionPlot{1,2}, 'Train', selectedANN.PlotData.RegressionPlot{2,1}, selectedANN.PlotData.RegressionPlot{2,2}, 'Validation', selectedANN.PlotData.RegressionPlot{3,1}, selectedANN.PlotData.RegressionPlot{3,2}, 'Testing');
+    h = msgbox('SOM Hits Plot is available only for Self Organizing Maps', 'Warning');
 end
-view(selectedANN.ANN);
-xlabel('Input Index');
-ylabel('Delta Performance');
 
 % Update handles structure
 guidata(hObject, handles);
 
-% UIWAIT makes viewANNGUI wait for user response (see UIRESUME)
+% UIWAIT makes plotSOMHitsGUI wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = viewANNGUI_OutputFcn(hObject, eventdata, handles) 
+function varargout = plotSOMHitsGUI_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
