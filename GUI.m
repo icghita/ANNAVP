@@ -22,7 +22,7 @@ function varargout = GUI(varargin)
 
 % Edit the above text to modify the response to help GUI
 
-% Last Modified by GUIDE v2.5 18-Sep-2017 12:43:19
+% Last Modified by GUIDE v2.5 22-Sep-2017 18:34:38
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -801,6 +801,35 @@ setappdata(0,'mainHandles', handles);
 I50GUI;
 guidata(hObject, handles);
 
+
+% --- Executes on button press in coveragePlotPushButton.
+function coveragePlotPushButton_Callback(hObject, eventdata, handles)
+% hObject    handle to coveragePlotPushButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles = guidata(handles.output);
+try
+    colors = colormap(jet);
+    colorSpacing = floor(length(colors)/length(handles.antibodyNames));
+    miuMLArray = logspace(-3,2,100);
+    excelSize = size(handles.excelData);
+    legendLabels = cell(length(handles.antibodyNames),1);
+    figure('Name', 'Coverage Plot');
+    for i=1:length(handles.antibodyNames)
+        sortedData = sort(cell2mat(handles.excelData(2:excelSize(1), i+1)));
+        coverageArray = linspace(0,0,length(miuMLArray));
+        for j=1:length(miuMLArray)
+            coverageArray(j) = length(sortedData(sortedData < miuMLArray(j)))/length(sortedData);
+        end
+        legendLabels{i} = handles.antibodyNames{i};
+        semilogx(miuMLArray, coverageArray, 'Color', colors(i*colorSpacing,:)), hold on;
+    end
+    grid on;
+    xlabel('Antibody concentration (ug/mL)');
+    ylabel('% Coverage');
+    legend(legendLabels);
+catch
+end
 
 % --- Executes on button press in viewFastaPushButton.
 function viewFastaPushButton_Callback(hObject, eventdata, handles)

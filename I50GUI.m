@@ -22,7 +22,7 @@ function varargout = I50GUI(varargin)
 
 % Edit the above text to modify the response to help I50GUI
 
-% Last Modified by GUIDE v2.5 02-Aug-2017 21:02:25
+% Last Modified by GUIDE v2.5 20-Sep-2017 19:54:15
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -54,6 +54,23 @@ function I50GUI_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Choose default command line output for I50GUI
 handles.output = hObject;
+
+mainHandles = getappdata(0, 'mainHandles');
+try
+    excelSize = size(mainHandles.excelData);
+    for i=1:excelSize(2)-1
+        if(strcmp(mainHandles.antibodyNames(i), mainHandles.selectedAntibodyName))
+            j=i;
+            break;
+        end
+    end
+    data = mainHandles.excelData(2:excelSize(1), j+1);
+catch
+end
+axes(handles.i50DistributionAxes);
+plot([1:length(data)], cell2mat(data), '.'), grid on;
+xlabel('HIV-1 Strain');
+ylabel(mainHandles.selectedAntibodyName);
 
 % Update handles structure
 guidata(hObject, handles);
@@ -95,3 +112,12 @@ catch
 end
 set(handles.output, 'Data', data, 'ColumnName', colNames);
 guidata(hObject, handles);
+
+
+% --- Executes during object creation, after setting all properties.
+function i50DistributionAxes_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to i50DistributionAxes (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: place code in OpeningFcn to populate i50DistributionAxes
