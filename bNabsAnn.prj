@@ -1,0 +1,150 @@
+<deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
+  <configuration build-checksum="2491356486" file="C:\Users\asus-rog\Desktop\ann-relationship-between-hiv-and-antibodies-master\bNabsAnn.prj" location="C:\Users\asus-rog\Desktop\ann-relationship-between-hiv-and-antibodies-master" name="bNabsAnn" preferred-package-location="C:\Users\asus-rog\Desktop\ann-relationship-between-hiv-and-antibodies-master\bNabsAnn\for_redistribution" preferred-package-type="package.type.exe" target="target.ezdeploy.standalone" target-name="Application Compiler">
+    <param.appname>GUI</param.appname>
+    <param.icon />
+    <param.icons />
+    <param.version>1.0</param.version>
+    <param.authnamewatermark>Ghita Iulian</param.authnamewatermark>
+    <param.email />
+    <param.company />
+    <param.summary />
+    <param.description />
+    <param.screenshot />
+    <param.guid />
+    <param.installpath.string>\GUI\</param.installpath.string>
+    <param.installpath.combo>option.installpath.programfiles</param.installpath.combo>
+    <param.logo />
+    <param.install.notes />
+    <param.target.install.notes />
+    <param.intermediate>${PROJECT_ROOT}\bNabsAnn\for_testing</param.intermediate>
+    <param.files.only>${PROJECT_ROOT}\bNabsAnn\for_redistribution_files_only</param.files.only>
+    <param.output>${PROJECT_ROOT}\bNabsAnn\for_redistribution</param.output>
+    <param.logdir>${PROJECT_ROOT}\bNabsAnn</param.logdir>
+    <param.enable.clean.build>false</param.enable.clean.build>
+    <param.user.defined.mcr.options />
+    <param.embed.ctf>true</param.embed.ctf>
+    <param.target.type>subtarget.standalone</param.target.type>
+    <param.support.packages />
+    <param.web.mcr>true</param.web.mcr>
+    <param.package.mcr>false</param.package.mcr>
+    <param.no.mcr>false</param.no.mcr>
+    <param.web.mcr.name>MyAppInstaller_web</param.web.mcr.name>
+    <param.package.mcr.name>MyAppInstaller_mcr</param.package.mcr.name>
+    <param.no.mcr.name>MyAppInstaller_app</param.no.mcr.name>
+    <param.windows.command.prompt>true</param.windows.command.prompt>
+    <param.create.log>false</param.create.log>
+    <param.log.file />
+    <unset>
+      <param.icon />
+      <param.icons />
+      <param.version />
+      <param.email />
+      <param.company />
+      <param.summary />
+      <param.description />
+      <param.screenshot />
+      <param.guid />
+      <param.installpath.string />
+      <param.installpath.combo />
+      <param.logo />
+      <param.target.install.notes />
+      <param.intermediate />
+      <param.files.only />
+      <param.output />
+      <param.logdir />
+      <param.enable.clean.build />
+      <param.user.defined.mcr.options />
+      <param.embed.ctf />
+      <param.target.type />
+      <param.support.packages />
+      <param.web.mcr />
+      <param.package.mcr />
+      <param.no.mcr />
+      <param.web.mcr.name />
+      <param.package.mcr.name />
+      <param.no.mcr.name />
+      <param.windows.command.prompt />
+      <param.create.log />
+      <param.log.file />
+    </unset>
+    <fileset.main>
+      <file>C:\Users\asus-rog\Desktop\src\GUI.m</file>
+    </fileset.main>
+    <fileset.resources />
+    <fileset.package />
+    <fileset.depfun>
+      <file>C:\Users\asus-rog\Desktop\src\aa2properties.m</file>
+      <file>C:\Users\asus-rog\Desktop\src\codifyFasta.m</file>
+      <file>C:\Users\asus-rog\Desktop\src\convertToClasses.m</file>
+      <file>C:\Users\asus-rog\Desktop\src\createMultiInputAnn.m</file>
+      <file>C:\Users\asus-rog\Desktop\src\FastaGUI.fig</file>
+      <file>C:\Users\asus-rog\Desktop\src\FastaGUI.m</file>
+      <file>C:\Users\asus-rog\Desktop\src\generateFeedforwardNetwork.m</file>
+      <file>C:\Users\asus-rog\Desktop\src\generateSelfOrganizingMap.m</file>
+      <file>C:\Users\asus-rog\Desktop\src\getCommonElements.m</file>
+      <file>C:\Users\asus-rog\Desktop\src\GUI.fig</file>
+      <file>C:\Users\asus-rog\Desktop\src\I50GUI.fig</file>
+      <file>C:\Users\asus-rog\Desktop\src\I50GUI.m</file>
+      <file>C:\Users\asus-rog\Desktop\src\plotPLSRegress.m</file>
+      <file>C:\Users\asus-rog\Desktop\src\plotSOMHitsGUI.fig</file>
+      <file>C:\Users\asus-rog\Desktop\src\plotSOMHitsGUI.m</file>
+      <file>C:\Users\asus-rog\Desktop\src\renormalize.m</file>
+      <file>C:\Users\asus-rog\Desktop\src\sensitivityAnalysis.m</file>
+      <file>C:\Users\asus-rog\Desktop\src\sensitivityAnalysisGUI.fig</file>
+      <file>C:\Users\asus-rog\Desktop\src\sensitivityAnalysisGUI.m</file>
+      <file>C:\Users\asus-rog\Desktop\src\somOutputGUI.fig</file>
+      <file>C:\Users\asus-rog\Desktop\src\somOutputGUI.m</file>
+      <file>C:\Users\asus-rog\Desktop\src\sortByLengthDesc.m</file>
+    </fileset.depfun>
+    <build-deliverables>
+      <file location="${PROJECT_ROOT}\bNabsAnn\for_testing" name="splash.png" optional="false">C:\Users\asus-rog\Desktop\ann-relationship-between-hiv-and-antibodies-master\bNabsAnn\for_testing\splash.png</file>
+      <file location="${PROJECT_ROOT}\bNabsAnn\for_testing" name="GUI.exe" optional="false">C:\Users\asus-rog\Desktop\ann-relationship-between-hiv-and-antibodies-master\bNabsAnn\for_testing\GUI.exe</file>
+      <file location="${PROJECT_ROOT}\bNabsAnn\for_testing" name="readme.txt" optional="true">C:\Users\asus-rog\Desktop\ann-relationship-between-hiv-and-antibodies-master\bNabsAnn\for_testing\readme.txt</file>
+    </build-deliverables>
+    <workflow />
+    <matlab>
+      <root>C:\Program Files\MATLAB\R2016a</root>
+      <toolboxes>
+        <toolbox name="fixedpoint" />
+        <toolbox name="matlabcoder" />
+        <toolbox name="matlabhdlcoder" />
+        <toolbox name="embeddedcoder" />
+      </toolboxes>
+      <toolbox>
+        <fixedpoint>
+          <enabled>true</enabled>
+        </fixedpoint>
+      </toolbox>
+      <toolbox>
+        <matlabcoder>
+          <enabled>true</enabled>
+        </matlabcoder>
+      </toolbox>
+      <toolbox>
+        <matlabhdlcoder>
+          <enabled>true</enabled>
+        </matlabhdlcoder>
+      </toolbox>
+      <toolbox>
+        <embeddedcoder>
+          <enabled>true</enabled>
+        </embeddedcoder>
+      </toolbox>
+    </matlab>
+    <platform>
+      <unix>false</unix>
+      <mac>false</mac>
+      <windows>true</windows>
+      <win2k>false</win2k>
+      <winxp>false</winxp>
+      <vista>false</vista>
+      <linux>false</linux>
+      <solaris>false</solaris>
+      <osver>6.2</osver>
+      <os32>false</os32>
+      <os64>true</os64>
+      <arch>win64</arch>
+      <matlab>true</matlab>
+    </platform>
+  </configuration>
+</deployment-project>

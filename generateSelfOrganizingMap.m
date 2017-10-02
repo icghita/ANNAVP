@@ -19,19 +19,32 @@ function annStruct = generateSelfOrganizingMap(networkName, networkType, codific
         else
             numProperties = 6;
         end
-        auxData = {};
+        auxData = [];
         for i=1:numProperties
             auxData = vertcat(auxData, codifiedFastaData{i});
         end
         codifiedFastaData = auxData;
+%        ann.numInputs = numProperties;
+%        ann.inputConnect = ones(1, numProperties);
+%        ann = configure(ann, codifiedFastaData);
     end
+    
     [ann tr] = train(ann, codifiedFastaData);
     clusterHeader = [];
     clusterContents = cell(1, mapWidth*mapHeight);
     fastaSize = size(filteredFastaData);
     for i=1:fastaSize(2)
-        annOutput = ann(codifiedFastaData(:, i));
-        clusterContents{find(annOutput)}(end+1) = {filteredFastaData(i).Header};
+%        if(strcmp(codification, 'A-6 (Properties codification)') || strcmp(codification, 'A-9 (Properties codification)') || strcmp(codification, 'B (Raw Properties)'))
+%            propertiesInput = cell(numProperties, 1);
+%            for j=1:numProperties
+%                propertiesInput{j} = codifiedFastaData{j}(:, i);
+%            end
+%            annOutput = ann(propertiesInput);
+%            clusterContents{find(annOutput{1})}(end+1) = {filteredFastaData(i).Header};
+%        else
+            annOutput = ann(codifiedFastaData(:, i));
+            clusterContents{find(annOutput)}(end+1) = {filteredFastaData(i).Header};
+%        end
     end
     %sort the clusters of the SOM with the most populated ones at the
     %beggining and save it to the return struct
