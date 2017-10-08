@@ -57,10 +57,10 @@ handles.output = hObject;
 
 selectedANN = getappdata(0, 'mainHandles');
 axes(handles.plotSomHitsAxes);
-if(strcmp(selectedANN.NetworkType, 'Self Organizing Map'))
+if(strcmp(selectedANN.NetworkType, 'Self Organizing Map') && strcmp(selectedANN.Codification, 'A (Numerical)'))
     plotsomhits(selectedANN.ANN, selectedANN.PlotData.FastaData);
 else
-    h = msgbox('SOM Hits Plot is available only for Self Organizing Maps', 'Warning');
+    h = msgbox('SOM Hits Plot is available only for Self Organizing Maps with single input layer', 'Warning');
 end
 
 % Update handles structure
