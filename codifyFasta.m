@@ -19,7 +19,7 @@ function [codifiedFasta, filteredFasta] = codifyFasta(fastaData, codification, r
         %ignores entries which contain uncodified symbols
         if(isempty(regexpi(tempString', '#')))
             if(strcmp(codification, 'A (Numerical)'))
-                tempArray = double(aa2int(tempString))/range;
+                tempArray = aa2intCustom(tempString)/range;
             else
                 tempArray = aa2properties(tempString, codification);
             end

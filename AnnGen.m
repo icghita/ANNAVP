@@ -171,10 +171,6 @@ end
 set(handles.antibodyListbox, 'string',  handles.filteredAntibodyNames);
 guidata(hObject,handles);
 
-function antibodySearchPushButton_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to antibodySearchPushButton (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
 
 % --- Executes on selection change in antibodyListbox.
 function handles = antibodyListbox_Callback(hObject, eventdata, handles)
@@ -215,7 +211,7 @@ drawnow;
 
 localFastaFile = get(hObject,'String');
 try
-    localFastaData = fastaread(localFastaFile,  'blockread', [1 Inf]);
+    localFastaData = fastareadCustom(localFastaFile);
     set(handles.virusListbox, 'string', {localFastaData.Header});
     handles = virusListbox_Callback(handles.virusListbox, eventdata, handles);
     handles.fastaData = localFastaData;
