@@ -22,7 +22,7 @@ function varargout = AnnGen(varargin)
 
 % Edit the above text to modify the response to help AnnGen
 
-% Last Modified by GUIDE v2.5 02-Oct-2017 00:16:07
+% Last Modified by GUIDE v2.5 10-Jul-2020 16:45:41
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -555,34 +555,45 @@ set(handles.figure1, 'pointer', 'watch');
 drawnow;
 
 try
-    for i=1:length(handles.fastaData)
-        if(strcmp(handles.selectedVirusName, handles.fastaData(i).Header))
-            rawInput = handles.fastaData(i);
-            break;
-        end
-    end
     loadedANN = load(handles.ANNFile);
     selectedANN = loadedANN.ANNStorage(handles.SelectedANNIndex);
-    codifiedInput = codifyFasta(rawInput, selectedANN.Codification);
-    if(strcmp(selectedANN.NetworkType, 'Self Organizing Map') && strcmp(selectedANN.Codification, 'B (Raw Properties)'))
-        codifiedInput = vertcat(codifiedInput{1}, codifiedInput{2}, codifiedInput{3}, codifiedInput{4}, codifiedInput{5}, codifiedInput{6});
-    end
-    rawOutput = selectedANN.ANN(codifiedInput);
-    if(iscell(rawOutput))
-        rawOutput = rawOutput{1};
-    end
-    if(strcmp(selectedANN.NetworkType, 'Self Organizing Map'))
-        rawOutput = find(rawOutput);
-        renormalizedOutput = 'NaN';
-    else
-        if(selectedANN.ClassArgs(1))
-            renormalizedOutput = convertToClasses(rawOutput, 0.25, 0.75);
-        else    
-            renormalizedOutput = renormalize(rawOutput, selectedANN.AntibodySetLimits(1), selectedANN.AntibodySetLimits(2));
+    outputArray = cell(length(handles.fastaData)+1, 3);
+    outputArray(1,:) = {'Strain', 'Raw Output', 'Normalised Output'};
+    for i=1:length(handles.fastaData)
+        codifiedInput = codifyFasta(handles.fastaData(i), selectedANN.Codification);
+        if(strcmp(selectedANN.NetworkType, 'Self Organizing Map') && strcmp(selectedANN.Codification, 'B (Raw Properties)'))
+            codifiedInput = vertcat(codifiedInput{1}, codifiedInput{2}, codifiedInput{3}, codifiedInput{4}, codifiedInput{5}, codifiedInput{6});
         end
+        try
+            rawOutput = selectedANN.ANN(codifiedInput);
+        catch
+            outputArray(i+1,:) = {handles.fastaData(i).Header, '', ''};
+            continue;
+        end
+        if(iscell(rawOutput))
+           rawOutput = rawOutput{1};
+        end
+        if(strcmp(selectedANN.NetworkType, 'Self Organizing Map'))
+           rawOutput = find(rawOutput);
+           renormalizedOutput = 'NaN';
+        else
+            if(selectedANN.ClassArgs(1))
+                renormalizedOutput = convertToClasses(rawOutput, selectedANN.ClassArgs(2), selectedANN.ClassArgs(3));
+            else    
+                renormalizedOutput = renormalize(rawOutput, selectedANN.AntibodySetLimits(1), selectedANN.AntibodySetLimits(2));
+            end
+        end
+        outputArray(i+1,:) = {handles.fastaData(i).Header, num2str(rawOutput), num2str(renormalizedOutput)};
+    %set(handles.ANNOutputText, 'String', num2str(rawOutput));
+    %set(handles.renormalizedANNOutputText, 'String', num2str(renormalizedOutput));
+    
+    %if(strcmp(handles.selectedVirusName, handles.fastaData(i).Header))
+    %        rawInput = handles.fastaData(i);
+    %        break;
+     %   end
     end
-    set(handles.ANNOutputText, 'String', num2str(rawOutput));
-    set(handles.renormalizedANNOutputText, 'String', num2str(renormalizedOutput));
+    outputTable = cell2table(outputArray(2:end,:),'VariableNames',outputArray(1,:));
+    writetable(outputTable, handles.outputFile);
 catch
     if(iscell(codifiedInput))
         codifiedInput = codifiedInput{1};
@@ -665,7 +676,7 @@ function annBrowsePushButton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles = guidata(handles.output);
-[FileName,PathName] = uigetfile('*.mat','Select the Artificial Neural Network file');
+[FileName,PathName] = uiputfile('*.mat','Select the Artificial Neural Network file');
 localANNFile = strcat(PathName, FileName);
 set(handles.annFilePathText, 'String', localANNFile);
 handles = annFilePathText_Callback(handles.annFilePathText, eventdata, handles);
@@ -872,11 +883,27 @@ oldpointer = get(handles.figure1, 'pointer');
 set(handles.figure1, 'pointer', 'watch');
 drawnow;
 
-try
-    setappdata(0,'mainHandles', handles);
-    sensitivityAnalysisGUI;
-catch
+loadedANN = load(handles.ANNFile);
+selectedANN = loadedANN.ANNStorage(handles.SelectedANNIndex);
+if(strcmp(selectedANN.NetworkType, 'Feedforward Neural Network'))
+    try
+        [inputNumbers, deltaPerf] = sensitivityAnalysis(selectedANN.ANN, handles.fastaData, handles.excelData, selectedANN.Codification, selectedANN.Antibody, selectedANN.ClassArgs);
+        figure('Name', 'Sensitivity Analysis Plot');
+        plot(inputNumbers, deltaPerf);%, 'parent', handles.sensitivityAnalysisPlot);
+        xlabel('Input Index');
+        ylabel('Delta Performance');
+    catch
+        h = msgbox('Make sure that the Fasta alignements are equal to the input of the Network and that both fasta and excel files have been provided', 'Error');
+    end
+else
+    h = msgbox('Sensitivity Analysis is available only for Feedforward Neural Networks', 'Warning');
 end
+
+% try
+%     setappdata(0,'mainHandles', handles);
+%     sensitivityAnalysisGUI;
+% catch
+% end
 
 set(handles.figure1, 'pointer', oldpointer);
 drawnow;
@@ -895,8 +922,8 @@ drawnow;
 
 loadedANN = load(handles.ANNFile);
 selectedANN = loadedANN.ANNStorage(handles.SelectedANNIndex);
-setappdata(0,'mainHandles', selectedANN);
-plotSOMHitsGUI;
+figure('Name','SOM Sample Hits');
+plotsomhits(selectedANN.ANN, selectedANN.PlotData.FastaData);
 
 set(handles.figure1, 'pointer', oldpointer);
 drawnow;
@@ -1267,3 +1294,74 @@ function DebugButton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 keyboard
+
+
+% --- Executes on key press with focus on useANNPushButton and none of its controls.
+function useANNPushButton_KeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to useANNPushButton (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.UICONTROL)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes during object creation, after setting all properties.
+function renormalizedANNOutputText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to renormalizedANNOutputText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+
+% --- If Enable == 'on', executes on mouse press in 5 pixel border.
+% --- Otherwise, executes on mouse press in 5 pixel border or over renormalizedANNOutputText.
+function renormalizedANNOutputText_ButtonDownFcn(hObject, eventdata, handles)
+% hObject    handle to renormalizedANNOutputText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in outputBrowsePushButton.
+function outputBrowsePushButton_Callback(hObject, eventdata, handles)
+% hObject    handle to outputBrowsePushButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles = guidata(handles.output);
+[FileName,PathName] = uiputfile('*','Select the output file');
+handles.outputFile = strcat(PathName, FileName);
+set(handles.outputFilePathText, 'String', handles.outputFile);
+handles = outputFilePathText_Callback(handles.outputFilePathText, eventdata, handles);
+guidata(hObject,handles);
+
+
+function handles = outputFilePathText_Callback(hObject, eventdata, handles)
+% hObject    handle to outputFilePathText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of outputFilePathText as text
+%        str2double(get(hObject,'String')) returns contents of outputFilePathText as a double
+handles = guidata(handles.output);
+oldpointer = get(handles.figure1, 'pointer');
+set(handles.figure1, 'pointer', 'watch');
+drawnow;
+
+localOutputFile = get(hObject,'String');
+handles.outputFile = localOutputFile;
+
+set(handles.figure1, 'pointer', oldpointer);
+drawnow;
+guidata(hObject,handles);
+
+
+% --- Executes during object creation, after setting all properties.
+function outputFilePathText_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to outputFilePathText (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

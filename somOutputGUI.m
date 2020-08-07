@@ -22,7 +22,7 @@ function varargout = somOutputGUI(varargin)
 
 % Edit the above text to modify the response to help somOutputGUI
 
-% Last Modified by GUIDE v2.5 08-Aug-2017 20:46:27
+% Last Modified by GUIDE v2.5 12-Jul-2020 18:45:31
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -55,6 +55,7 @@ function somOutputGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for somOutputGUI
 handles.output = hObject;
 
+set(gcf, 'NumberTitle', 'off', 'Name','Clusters Table');
 selectedANN = getappdata(0, 'mainHandles');
 if(strcmp(selectedANN.NetworkType, 'Self Organizing Map'))
     maxLength = length(selectedANN.PlotData.ClusterContents{1});
@@ -88,3 +89,19 @@ function varargout = somOutputGUI_OutputFcn(hObject, eventdata, handles)
 
 % Get default command line output from handles structure
 varargout{1} = handles.output;
+
+
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function saveClustersTable_ClickedCallback(hObject, eventdata, handles)
+% hObject    handle to saveClustersTable (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.output = hObject;
+[FileName,PathName] = uiputfile('*','Select save location');
+outputFilePath = strcat(PathName, FileName);
+outputTable = cell2table(handles.somClustersTable.Data,'VariableNames',cellstr(handles.somClustersTable.ColumnName));
+writetable(outputTable, outputFilePath);
+guidata(hObject, handles);

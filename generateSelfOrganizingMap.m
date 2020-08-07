@@ -48,7 +48,7 @@ function annStruct = generateSelfOrganizingMap(networkName, networkType, codific
     if(strcmp(codification, 'A-6 (Properties codification)') || strcmp(codification, 'A-9 (Properties codification)') || strcmp(codification, 'B (Raw Properties)'))
         h = msgbox('Plot SOM Hits is not available for multiple input layers', 'Warning');
     else
-        figure(1);
+        figure('Name', 'SOM Sample Hits');
         plotsomhits(ann, codifiedFastaData);
     end
     %sort the clusters of the SOM with the most populated ones at the
