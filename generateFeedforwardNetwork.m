@@ -68,7 +68,7 @@ function bestAnnStruct = generateFeedforwardNetwork(networkName, networkType, co
     trTarg = commonAntibodyData(bestAnnStruct.TR.trainInd);
     vTarg = commonAntibodyData(bestAnnStruct.TR.valInd);
     tsTarg = commonAntibodyData(bestAnnStruct.TR.testInd);
-    plotData = struct('RegressionPlot', {{trTarg trOut; vTarg vOut; tsTarg tsOut}});
+    plotData = struct('RegressionPlot', {{trTarg trOut; vTarg vOut; tsTarg tsOut}}, 'PLSPlot', {{commonCodifiedFastaData, commonAntibodyData}});
     bestAnnStruct.PlotData = plotData;
 
     figure(1);
