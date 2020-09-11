@@ -1,5 +1,6 @@
 function varargout = ANNfAN(varargin)
-% ANNfAN MATLAB code for ANNfAN.fig
+%      author: Ghita Iulian Cristian
+%      ANNfAN MATLAB code for ANNfAN.fig
 %      ANNfAN, by itself, creates a new ANNfAN or raises the existing
 %      singleton*.
 %
