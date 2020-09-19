@@ -22,7 +22,7 @@ function varargout = FastaGUI(varargin)
 
 % Edit the above text to modify the response to help FastaGUI
 
-% Last Modified by GUIDE v2.5 06-Sep-2017 16:02:01
+% Last Modified by GUIDE v2.5 19-Sep-2020 11:03:05
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -169,3 +169,16 @@ try
 catch
 end
 guidata(hObject,handles);
+
+
+% --------------------------------------------------------------------
+function saveGlycosylationSites_ClickedCallback(hObject, eventdata, handles)
+% hObject    handle to saveGlycosylationSites (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.output = hObject;
+[FileName,PathName] = uiputfile('*','Select save location');
+outputFilePath = strcat(PathName, FileName);
+outputTable = handles.GlycosylationSites';
+writematrix(outputTable, outputFilePath);
+guidata(hObject, handles);
